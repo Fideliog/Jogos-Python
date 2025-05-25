@@ -60,7 +60,7 @@ class Ingredientes(pygame.sprite.Sprite):
         self.image = self.Sprites_Ingre[self.Tipo]
         self.image = pygame.transform.scale(self.image, (21*5, 17*5))
         self.rect = self.image.get_rect()
-        self.rect.topleft = randint(80, 660), 100
+        self.rect.topleft = randint(80, 660), 40
 
 
     def update(self):
@@ -71,7 +71,7 @@ class Ingredientes(pygame.sprite.Sprite):
 
         if (self.rect.bottomleft[1] >= 560 ):
             self.rect.x = randint(80, 660)
-            self.rect.y = 100
+            self.rect.y = 40
 
 class TacoProta(pygame.sprite.Sprite):
 
@@ -141,6 +141,7 @@ MainPageTaco = MainPage()
 Sprites_Al.add(Alface)
 Sprites_To.add(Tomate)
 Sprites_Car.add(Carne)
+
 Sprites_Geral.add(TacoBalde)
 Sprite_Tela.add(MainPageTaco)
 
@@ -182,12 +183,31 @@ while RodarJogo:
         if delay > 60:
             Sprites_Car.draw(janela)
             Sprites_Car.update()
+
         delay = delay + 1
 
         for events in pygame.event.get():
             if events.type == pygame.QUIT:
                 pygame.quit()
                 exit()
+
+        if pygame.sprite.spritecollide(TacoBalde, Sprites_Al, True):
+            Alface = Ingredientes(0)
+            Sprites_Al.add(Alface)
+            Sprites_Al.draw(janela)
+            Sprites_Al.update()
+            
+        if pygame.sprite.spritecollide(TacoBalde, Sprites_To, True):
+            Tomate = Ingredientes(2)
+            Sprites_To.add(Tomate)
+            Sprites_To.draw(janela)
+            Sprites_To.update()
+            
+        if pygame.sprite.spritecollide(TacoBalde, Sprites_Car, True):
+            Carne = Ingredientes(1)
+            Sprites_Car.add(Carne)
+            Sprites_Car.draw(janela)
+            Sprites_Car.update()
 
         pygame.display.flip()
 
