@@ -1,3 +1,10 @@
+import os, sys
+dirpath = os.getcwd()
+sys.path.append(dirpath)
+if getattr(sys, "frozen", False):
+    os.chdir(sys._MEIPASS)
+###
+
 import pygame
 from pygame.locals import *
 from sys import exit 
@@ -120,7 +127,7 @@ class Ingredientes(pygame.sprite.Sprite):
         if (self.rect.bottomleft[1] >= 560 ):
             self.rect.x = randint(80, 660)
             self.rect.y = 40
-            IngredientesRec = IngredientesRec - 1
+            IngredientesRec = max(0, IngredientesRec - 1)
 
 class TacoProta(pygame.sprite.Sprite):
 
