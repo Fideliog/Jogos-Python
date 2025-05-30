@@ -8,6 +8,8 @@ diretorio_principal = os.path.dirname(__file__)
 diretorio_imagens = os.path.join(diretorio_principal,'imagens')
 diretorio_sons = os.path.join(diretorio_principal,'sons')
 
+Rainig_taco = os.path.join(diretorio_sons,'Chovendo_Taco.mp3')
+
 TelaInicial_transform = pygame.image.load(os.path.join(diretorio_imagens,'TacoMainPage.png'))
 
 TelaGame_transform = pygame.image.load(os.path.join(diretorio_imagens,'TelaGame.png'))
@@ -68,6 +70,27 @@ def ReiniciarJogo():
     vel_caveira = 4.0
     Sprite_coracao.add(corasao3)
     Sprite_coracao.add(corasao2)
+
+    Sprites_Al.empty()
+    Sprites_To.empty()
+    Sprites_Car.empty()
+    Sprites_Que.empty()
+    Sprites_Morte.empty()
+
+    global Alface, Tomate, Carne, Queijo, Caveira
+    Alface = Ingredientes(0, vel_alface)
+    Tomate = Ingredientes(2, vel_tomate)
+    Carne = Ingredientes(1, vel_carne)
+    Queijo = Ingredientes(3, vel_queijo)
+    Caveira = Ingredientes(4, vel_caveira)
+    Sprites_Al.add(Alface)
+    Sprites_To.add(Tomate)
+    Sprites_Car.add(Carne)
+    Sprites_Que.add(Queijo)
+    Sprites_Morte.add(Caveira)
+    
+    global caveira_extra_adicionada
+    caveira_extra_adicionada = False
 
 class Ingredientes(pygame.sprite.Sprite):
 
@@ -199,7 +222,6 @@ Tomate = Ingredientes(2, vel_tomate)
 Queijo = Ingredientes(3, vel_queijo)
 Caveira = Ingredientes(4, vel_caveira)
 
-
 TacoBalde = TacoProta()
 MainPageTaco = MainPage()
 corasao1 = Coracao()
@@ -208,22 +230,24 @@ corasao3 = Coracao()
 
 corasao2.rect.topleft = 740, 597
 corasao3.rect.topleft = 780, 597
-
-Sprite_coracao.add(corasao1)
-Sprite_coracao.add(corasao2)
-Sprite_coracao.add(corasao3)
-
 Sprites_Al.add(Alface)
 Sprites_To.add(Tomate)
 Sprites_Car.add(Carne)
 Sprites_Que.add(Queijo)
 Sprites_Morte.add(Caveira)
+Sprite_coracao.add(corasao1)
+Sprite_coracao.add(corasao2)
+Sprite_coracao.add(corasao3)
 
 Sprites_Geral.add(TacoBalde)
 Sprite_Tela.add(MainPageTaco)
 
 
 while RodarJogo:
+    if RodarMainPage:
+        pygame.mixer.music.stop()
+        pygame.mixer.music.load(Rainig_taco)
+        pygame.mixer.music.play(-1)
 
     while RodarMainPage:
         relogio.tick(30)
