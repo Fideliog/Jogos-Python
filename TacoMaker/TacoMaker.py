@@ -6,6 +6,8 @@ if getattr(sys, "frozen", False):
 ###
 
 import pygame
+import pygame_gui
+import json
 from pygame.locals import *
 from sys import exit 
 from random import randint
@@ -14,6 +16,7 @@ import os
 diretorio_principal = os.path.dirname(__file__)
 diretorio_imagens = os.path.join(diretorio_principal,'imagens')
 diretorio_sons = os.path.join(diretorio_principal,'sons')
+diretorio_fonts = os.path.join(diretorio_principal,'fonts')
 
 Rainig_taco = os.path.join(diretorio_sons,'Chovendo_Taco.mp3')
 
@@ -28,6 +31,32 @@ TelaFinal = pygame.transform.scale(TelaFinal_transform,(180*5, 140*5))
 Taco_transform = pygame.image.load(os.path.join(diretorio_imagens,'Taco.png'))
 
 Ingre_trasform = pygame.image.load(os.path.join(diretorio_imagens,'Ingredientes.png'))
+
+fontePixel = os.path.join(diretorio_fonts,'PressStart2P.ttf')
+
+
+
+arquivo_ranking = os.path.join(diretorio_principal, 'ranking.txt')
+
+def carregar_ranking():
+    if os.path.exists(arquivo_ranking):
+        with open(arquivo_ranking, 'r') as f:
+            return json.load(f)
+    return []
+
+def salvar_ranking(ranking):
+    with open(arquivo_ranking, 'w') as f:
+        json.dump(ranking, f)
+
+def atualizar_ranking(nome, pontuacao):
+    ranking = carregar_ranking()
+    ranking.append({"nome": nome, "pontuacao": pontuacao})
+    ranking = sorted(ranking, key=lambda x: x["pontuacao"], reverse=True)[:5]
+    salvar_ranking(ranking)
+
+
+
+
 
 pygame.init()
 
@@ -53,7 +82,9 @@ RodarJogo = True
 RodarFase = False
 RodarMainPage = True
 loop = True
-fonte = pygame.font.SysFont('Times New Roman', 80, True, True)
+fonte = pygame.font.Font(fontePixel, 50)
+fonte2 = pygame.font.Font(fontePixel, 25)
+
 velocidade = 1
 
 def VoltarMain():
@@ -157,10 +188,10 @@ class TacoProta(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, (44*3.75, 29*3.75))
 
 
-        if pygame.key.get_pressed()[K_a]:
+        if pygame.key.get_pressed()[K_a] or pygame.key.get_pressed()[K_LEFT]:
             if (self.rect.x >= 90 ):
                 self.rect.x = self.rect.x - 20
-        if pygame.key.get_pressed()[K_d]:
+        if pygame.key.get_pressed()[K_d] or pygame.key.get_pressed()[K_RIGHT]:
             if (self.rect.x < 650):
                 self.rect.x = self.rect.x + 20
 
@@ -333,8 +364,6 @@ while RodarJogo:
                 Caveira.velocidade = vel_caveira
             tempo_inicial = tempo_atual
 
-        print(f"Velocidade aumentada: {Alface.velocidade}")
-
         for events in pygame.event.get():
             if events.type == pygame.QUIT:
                 pygame.quit()
@@ -363,27 +392,64 @@ while RodarJogo:
         if pygame.sprite.spritecollide(TacoBalde, Sprites_Morte, True):
             Sprites_Morte.add(Ingredientes(4, vel_caveira))
             Vidas -= 1
+        
+        manager = pygame_gui.UIManager((largura, altura))
+        input_nome = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((300, 300), (300, 50)), manager=manager)
+        input_nome.hide()
+        enviar_nome = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((300, 360), (100, 40)), text='Enviar', manager=manager)
+        enviar_nome.hide()
+        nome_inserido = False
+        inserindo_nome = False
 
         if Vidas == 0:
             perdeu = True
-            while perdeu:
-                janela.blit(TelaFinal, (0,0))
-                pontu_formatado = f'{IngredientesRec}'
-                pontu_formatado_Novamente = fonte.render(pontu_formatado, False, (86, 8, 0))
-                janela.blit(pontu_formatado_Novamente, (615, 97))
+            nome_jogador = ""
+            ranking = carregar_ranking()
 
-                pygame.mixer.music.stop()
+            if len(ranking) < 5 or IngredientesRec > ranking[-1]["pontuacao"]:
+                inserindo_nome = True
+                input_nome.show()
+                enviar_nome.show()
+
+            while perdeu:
+                tempo_tick_inputs = relogio.tick(30) / 1000.0
+                janela.blit(TelaFinal, (0, 0))
+
+                if not inserindo_nome:
+                    pontu_formatado = f'{IngredientesRec}'
+                    texto_pontu = fonte.render(pontu_formatado, False, (86, 8, 0))
+                    janela.blit(texto_pontu, (615, 128))
+
+                for i, jogador in enumerate(carregar_ranking()):
+                    nome_text = fonte2.render(f"{jogador['nome']} - {jogador['pontuacao']}", False, (86, 8, 0))
+                    janela.blit(nome_text, (150, 260 + i * 46))
+
                 for event in pygame.event.get():
                     if event.type == QUIT:
                         pygame.quit()
                         exit()
-                    if event.type == KEYDOWN:
-                        if event.key == K_r:
-                            ReiniciarJogo()
-                            perdeu = False
-                        if event.key == K_ESCAPE:
-                            VoltarMain()
-                            perdeu = False
+
+                    if inserindo_nome:
+                        manager.process_events(event)
+                        if event.type == pygame_gui.UI_BUTTON_PRESSED:
+                            if event.ui_element == enviar_nome:
+                                nome_jogador = input_nome.get_text()
+                                atualizar_ranking(nome_jogador, IngredientesRec)
+                                input_nome.hide()
+                                enviar_nome.hide()
+                                inserindo_nome = False
+                    else:
+                        if event.type == KEYDOWN:
+                            if event.key == K_r:
+                                ReiniciarJogo()
+                                perdeu = False
+                            if event.key == K_ESCAPE:
+                                VoltarMain()
+                                perdeu = False
+
+                if inserindo_nome:
+                    manager.update(tempo_tick_inputs)
+                    manager.draw_ui(janela)
 
                 pygame.display.update()
 
