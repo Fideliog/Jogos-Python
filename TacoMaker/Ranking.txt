@@ -1,1 +1,1 @@
-[]
+[{"nome": "Lingan", "pontuacao": 11}]

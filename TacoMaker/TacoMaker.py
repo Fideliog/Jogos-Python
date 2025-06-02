@@ -29,6 +29,7 @@ TelaFinal_transform = pygame.image.load(os.path.join(diretorio_imagens,'TelaFina
 TelaFinal = pygame.transform.scale(TelaFinal_transform,(180*5, 140*5))
 
 Taco_transform = pygame.image.load(os.path.join(diretorio_imagens,'Taco.png'))
+Taco_true = pygame.transform.scale(Taco_transform, (44*3.75, 29*3.75))
 
 Ingre_trasform = pygame.image.load(os.path.join(diretorio_imagens,'Ingredientes.png'))
 
@@ -142,17 +143,16 @@ class Ingredientes(pygame.sprite.Sprite):
 
         for i in range(5):
             img = Ingre_trasform.subsurface((i * 16,0),(16,14))
-            self.Sprites_Ingre.append(img)
+            aumentada = pygame.transform.scale(img, (16*5, 14*5))
+            self.Sprites_Ingre.append(aumentada)
 
         self.image = self.Sprites_Ingre[self.Tipo]
-        self.image = pygame.transform.scale(self.image, (16*5, 14*5))
         self.rect = self.image.get_rect()
         self.rect.topleft = randint(80, 660), 40
 
     def update(self):
         global IngredientesRec
         self.image = self.Sprites_Ingre[int(self.Tipo)]
-        self.image = pygame.transform.scale(self.image, (16*5, 14*5))
         self.rect.y = self.rect.y + self.velocidade
 
         if (self.rect.bottomleft[1] >= 560 ):
@@ -163,37 +163,36 @@ class Ingredientes(pygame.sprite.Sprite):
 class TacoProta(pygame.sprite.Sprite):
 
     def __init__(self): 
-        pygame.sprite.Sprite.__init__(self)
-        self.TacoSprite = []
-        self.TacoSprite.append(Taco_transform)
-
+        super().__init__()
+        self.TacoSprite = [Taco_true]
         self.atual = 0
         self.image = self.TacoSprite[self.atual]
-        self.image = pygame.transform.scale(self.image, (44*3.75, 29*3.75))
-        visual_rect = self.image.get_rect()
-        visual_center = visual_rect.center
+        
+        self.image_rect = self.image.get_rect()
+        self.image_rect.topleft = (390, 480)
 
-        hitbox_width = int(visual_rect.width * 0.80)
-        hitbox_height = int(visual_rect.height * 0.80)
-
+        hitbox_width = int(self.image_rect.width * 0.8)
+        hitbox_height = int(self.image_rect.height * 0.8)
         self.rect = pygame.Rect(0, 0, hitbox_width, hitbox_height)
-        self.rect.center = visual_center
-        self.rect.topleft = 390, 480
+        self.rect.center = self.image_rect.center
 
-    def update(self):        
-        self.atual = self.atual + 0.20
+    def update(self):
+        self.atual += 0.20
         if self.atual >= len(self.TacoSprite):
             self.atual = 0
         self.image = self.TacoSprite[int(self.atual)]
-        self.image = pygame.transform.scale(self.image, (44*3.75, 29*3.75))
 
-
-        if pygame.key.get_pressed()[K_a] or pygame.key.get_pressed()[K_LEFT]:
-            if (self.rect.x >= 90 ):
-                self.rect.x = self.rect.x - 20
-        if pygame.key.get_pressed()[K_d] or pygame.key.get_pressed()[K_RIGHT]:
-            if (self.rect.x < 650):
-                self.rect.x = self.rect.x + 20
+        keys = pygame.key.get_pressed()
+        if keys[K_a] or keys[K_LEFT]:
+            if self.rect.left >= 90:
+                self.rect.x -= 20
+                self.image_rect.x -= 20
+        if keys[K_d] or keys[K_RIGHT]:
+            if self.rect.right <= 750:
+                self.rect.x += 20
+                self.image_rect.x += 20
+    def draw(self, surface):
+        surface.blit(self.image, self.image_rect.topleft)
 
 class Coracao(pygame.sprite.Sprite):
 
@@ -245,7 +244,6 @@ class MainPage(pygame.sprite.Sprite):
         self.image = self.Sprite_TelaInicial[int(self.sprite_atual)]
         self.image = pygame.transform.scale(self.image, (180*5, 140*5))
 
-Sprites_Geral = pygame.sprite.Group()
 Sprite_Tela = pygame.sprite.Group()
 Sprites_Al = pygame.sprite.Group()
 Sprites_Car = pygame.sprite.Group()
@@ -277,7 +275,6 @@ Sprite_coracao.add(corasao1)
 Sprite_coracao.add(corasao2)
 Sprite_coracao.add(corasao3)
 
-Sprites_Geral.add(TacoBalde)
 Sprite_Tela.add(MainPageTaco)
 
 
@@ -307,8 +304,8 @@ while RodarJogo:
 
         relogio.tick(30)        
         janela.blit(TelaGame, (0,0))
-        Sprites_Geral.draw(janela)
-        Sprites_Geral.update()
+        TacoBalde.draw(janela)
+        TacoBalde.update()
 
         if Vidas < 3:
             Sprite_coracao.remove(corasao3)
