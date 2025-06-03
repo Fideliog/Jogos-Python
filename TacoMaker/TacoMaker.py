@@ -31,13 +31,60 @@ TelaFinal = pygame.transform.scale(TelaFinal_transform,(180*5, 140*5))
 Taco_transform = pygame.image.load(os.path.join(diretorio_imagens,'Taco.png'))
 Taco_true = pygame.transform.scale(Taco_transform, (44*3.75, 29*3.75))
 
+Tutorial_transform = pygame.image.load(os.path.join(diretorio_imagens,'Tutorial.png'))
+TutorialFund = pygame.transform.scale(Tutorial_transform,(180*5, 140*5))
+
 Ingre_trasform = pygame.image.load(os.path.join(diretorio_imagens,'Ingredientes.png'))
 
 fontePixel = os.path.join(diretorio_fonts,'PressStart2P.ttf')
 
-
-
 arquivo_ranking = os.path.join(diretorio_principal, 'ranking.txt')
+
+pygame.init()
+
+tempo_inicial = pygame.time.get_ticks()
+intervalo_subida = 1000
+caveira_extra_adicionada = False
+largura = 900
+altura = 700
+janela = pygame.display.set_mode([largura,altura])
+sprite_sheet_coracao = pygame.image.load(os.path.join(diretorio_imagens,'CoracaoBril.png')).convert_alpha()
+delay = 0
+IngredientesRec = 10
+Vidas = 3
+vel_alface = 2.0
+vel_tomate = 2.0
+vel_carne = 2.0
+vel_queijo = 2.0
+vel_caveira = 4.0
+vel_maxima = 15.0
+pygame.display.set_caption('TacoMaker')
+relogio = pygame.time.Clock()
+RodarJogo = True
+RodarFase = False
+RodarMainPage = True
+Tutorial = False
+loop = True
+fonte = pygame.font.Font(fontePixel, 50)
+fonte2 = pygame.font.Font(fontePixel, 25)
+fonte4 = pygame.font.Font(fontePixel, 20)
+fonte3 = pygame.font.Font(fontePixel, 38)
+
+Se_move_f = f'Se movimente com      ou'
+Se_ingre_f = f'Ingredientes         = +3 pontos'
+Se_cair_f = f'Deixar cair = -1 ponto'
+Se_cav_f = f'Caveira     = -1 Vida'
+Se_rank_f = f'Se conseguir pontos o suficiente'
+Se_rank2_f =f'entrará no Ranking'
+
+Se_move = fonte4.render(Se_move_f, False,  (86, 8, 0))
+Se_ingre = fonte4.render(Se_ingre_f, False,  (86, 8, 0))
+Se_cair = fonte4.render(Se_cair_f, False,  (86, 8, 0))
+Se_cav = fonte4.render(Se_cav_f, False,  (86, 8, 0))
+Se_rank = fonte4.render(Se_rank_f, False,  (86, 8, 0))
+Se_rank2 = fonte4.render(Se_rank2_f, False,  (86, 8, 0))
+
+velocidade = 1
 
 def carregar_ranking():
     if os.path.exists(arquivo_ranking):
@@ -55,52 +102,28 @@ def atualizar_ranking(nome, pontuacao):
     ranking = sorted(ranking, key=lambda x: x["pontuacao"], reverse=True)[:5]
     salvar_ranking(ranking)
 
-
-
-
-
-pygame.init()
-
-tempo_inicial = pygame.time.get_ticks()
-intervalo_subida = 1000
-caveira_extra_adicionada = False
-largura = 900
-altura = 700
-janela = pygame.display.set_mode([largura,altura])
-sprite_sheet_coracao = pygame.image.load(os.path.join(diretorio_imagens,'CoracaoBril.png')).convert_alpha()
-delay = 0
-IngredientesRec = 0
-Vidas = 3
-vel_alface = 2.0
-vel_tomate = 2.0
-vel_carne = 2.0
-vel_queijo = 2.0
-vel_caveira = 4.0
-vel_maxima = 15.0
-pygame.display.set_caption('TacoMaker')
-relogio = pygame.time.Clock()
-RodarJogo = True
-RodarFase = False
-RodarMainPage = True
-loop = True
-fonte = pygame.font.Font(fontePixel, 50)
-fonte2 = pygame.font.Font(fontePixel, 25)
-
-velocidade = 1
+def TutorialEntrar():
+    global RodarMainPage, RodarFase, Tutorial
+    RodarFase = False
+    RodarMainPage = False
+    Tutorial = True
 
 def VoltarMain():
-    global RodarMainPage, RodarFase
+    global RodarMainPage, RodarFase, Tutorial
     RodarFase = False
     RodarMainPage = True
+    Tutorial = False
+
 
 def ReiniciarJogo():
-    global RodarMainPage, protax, protay, RodarFase, IngredientesRec, Vidas, delay, vel_alface, vel_tomate, vel_carne, vel_queijo, vel_caveira
+    global RodarMainPage, protax, protay, RodarFase, IngredientesRec, Vidas, delay, vel_alface, vel_tomate, vel_carne, vel_queijo, vel_caveira, Tutorial
     RodarMainPage = False
+    Tutorial = False
     RodarFase = True
     protax = 70
     protay = 450
     Vidas = 3
-    IngredientesRec = 0
+    IngredientesRec = 10
     delay = 1
     vel_alface = 2.0
     vel_tomate = 2.0
@@ -158,7 +181,9 @@ class Ingredientes(pygame.sprite.Sprite):
         if (self.rect.bottomleft[1] >= 560 ):
             self.rect.x = randint(80, 660)
             self.rect.y = 40
-            IngredientesRec = max(0, IngredientesRec - 1)
+            if self.Tipo != 4:
+                IngredientesRec = max(0, IngredientesRec - 1)
+
 
 class TacoProta(pygame.sprite.Sprite):
 
@@ -279,10 +304,31 @@ Sprite_Tela.add(MainPageTaco)
 
 
 while RodarJogo:
-    if RodarMainPage:
-        pygame.mixer.music.stop()
-        pygame.mixer.music.load(Rainig_taco)
-        pygame.mixer.music.play(-1)
+
+    pygame.mixer.music.stop()
+    pygame.mixer.music.load(Rainig_taco)
+    pygame.mixer.music.play(-1)
+
+    while Tutorial:
+        janela.blit(TutorialFund, (0,0))
+
+        janela.blit(Se_move, (145, 200))
+        janela.blit(Se_ingre, (145, 280))
+        janela.blit(Se_cair, (145, 330))
+        janela.blit(Se_cav, (145, 400))
+        janela.blit(Se_rank, (145, 450))
+        janela.blit(Se_rank2, (145, 475))
+
+
+        for events in pygame.event.get():
+                if events.type == QUIT:
+                    pygame.quit()
+                    exit()
+                if events.type == KEYDOWN:
+                    if events.key == K_ESCAPE:
+                        VoltarMain()
+
+        pygame.display.flip()
 
     while RodarMainPage:
         relogio.tick(30)
@@ -297,6 +343,8 @@ while RodarJogo:
             if events.type == KEYDOWN:
                 if events.key == K_SPACE:
                     ReiniciarJogo()
+                if events.key == K_t:
+                    TutorialEntrar()
 
         pygame.display.flip()
 
@@ -306,6 +354,9 @@ while RodarJogo:
         janela.blit(TelaGame, (0,0))
         TacoBalde.draw(janela)
         TacoBalde.update()
+        pontu_formatado_tela = f'{IngredientesRec}'
+        texto_pontu_tela = fonte3.render(pontu_formatado_tela, False,  (86, 8, 0))
+        janela.blit(texto_pontu_tela, (676, 72))
 
         if Vidas < 3:
             Sprite_coracao.remove(corasao3)
