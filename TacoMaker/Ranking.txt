@@ -1,1 +1,1 @@
-[{"nome": "nigmaboy", "pontuacao": 500}, {"nome": "Gule", "pontuacao": 469}, {"nome": "HiMan", "pontuacao": 394}, {"nome": "Lingan", "pontuacao": 379}, {"nome": "TakoMaker", "pontuacao": 360}]
+[]

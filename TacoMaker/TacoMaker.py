@@ -302,12 +302,11 @@ Sprite_coracao.add(corasao3)
 
 Sprite_Tela.add(MainPageTaco)
 
+pygame.mixer.music.stop()
+pygame.mixer.music.load(Rainig_taco)
+pygame.mixer.music.play(-1)
 
 while RodarJogo:
-
-    pygame.mixer.music.stop()
-    pygame.mixer.music.load(Rainig_taco)
-    pygame.mixer.music.play(-1)
 
     while Tutorial:
         janela.blit(TutorialFund, (0,0))
@@ -444,7 +443,7 @@ while RodarJogo:
         manager = pygame_gui.UIManager((largura, altura))
         input_nome = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((300, 300), (300, 50)), manager=manager)
         input_nome.hide()
-        enviar_nome = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((300, 360), (100, 40)), text='Enviar', manager=manager)
+        enviar_nome = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((300, 360), (100, 40)), text='clique para escrever seu nome', manager=manager)
         enviar_nome.hide()
         nome_inserido = False
         inserindo_nome = False
