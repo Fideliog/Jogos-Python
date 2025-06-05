@@ -1,1 +1,1 @@
-[]
+[{"nome": "Player N1", "pontuacao": 218}, {"nome": "Fide", "pontuacao": 159}]

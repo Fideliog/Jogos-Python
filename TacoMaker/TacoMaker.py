@@ -18,9 +18,16 @@ diretorio_imagens = os.path.join(diretorio_principal,'imagens')
 diretorio_sons = os.path.join(diretorio_principal,'sons')
 diretorio_fonts = os.path.join(diretorio_principal,'fonts')
 
-Rainig_taco = os.path.join(diretorio_sons,'Chovendo_Taco.mp3')
+ponto2_caminho = os.path.join(diretorio_sons,'ponto1.mp3')
+ponto_caminho = os.path.join(diretorio_sons,'ponto2.mp3')
+Rainig_taco_caminho  = os.path.join(diretorio_sons,'Chovendo_Taco.mp3')
+Start_caminho  = os.path.join(diretorio_sons,'game-start-317318_[cut_1sec].mp3')
+Morte_caminho  = os.path.join(diretorio_sons,'wrong-buzzer-6268.mp3')
 
 TelaInicial_transform = pygame.image.load(os.path.join(diretorio_imagens,'TacoMainPage.png'))
+
+esc_nome_trasform = pygame.image.load(os.path.join(diretorio_imagens,'EscNome.png'))
+esc_nome = pygame.transform.scale(esc_nome_trasform,(180*5, 140*5))
 
 TelaGame_transform = pygame.image.load(os.path.join(diretorio_imagens,'TelaGame.png'))
 TelaGame = pygame.transform.scale(TelaGame_transform,(180*5, 140*5))
@@ -41,6 +48,16 @@ fontePixel = os.path.join(diretorio_fonts,'PressStart2P.ttf')
 arquivo_ranking = os.path.join(diretorio_principal, 'ranking.txt')
 
 pygame.init()
+
+ponto2 = pygame.mixer.Sound(ponto2_caminho)
+ponto = pygame.mixer.Sound(ponto_caminho)
+Rainig_taco = pygame.mixer.Sound(Rainig_taco_caminho)
+Start = pygame.mixer.Sound(Start_caminho)
+Morte = pygame.mixer.Sound(Morte_caminho)
+
+canal1 = pygame.mixer.Channel(0)
+canal2 = pygame.mixer.Channel(1)
+canal3 = pygame.mixer.Channel(2)
 
 tempo_inicial = pygame.time.get_ticks()
 intervalo_subida = 1000
@@ -83,6 +100,7 @@ Se_cair = fonte4.render(Se_cair_f, False,  (86, 8, 0))
 Se_cav = fonte4.render(Se_cav_f, False,  (86, 8, 0))
 Se_rank = fonte4.render(Se_rank_f, False,  (86, 8, 0))
 Se_rank2 = fonte4.render(Se_rank2_f, False,  (86, 8, 0))
+
 
 velocidade = 1
 
@@ -302,15 +320,13 @@ Sprite_coracao.add(corasao3)
 
 Sprite_Tela.add(MainPageTaco)
 
-pygame.mixer.music.stop()
-pygame.mixer.music.load(Rainig_taco)
-pygame.mixer.music.play(-1)
+canal1.play(Rainig_taco, loops=-1)
+canal1.set_volume(0.2)
 
 while RodarJogo:
 
     while Tutorial:
         janela.blit(TutorialFund, (0,0))
-
         janela.blit(Se_move, (145, 200))
         janela.blit(Se_ingre, (145, 280))
         janela.blit(Se_cair, (145, 330))
@@ -342,6 +358,7 @@ while RodarJogo:
             if events.type == KEYDOWN:
                 if events.key == K_SPACE:
                     ReiniciarJogo()
+                    canal2.play(ponto, loops=0)
                 if events.key == K_t:
                     TutorialEntrar()
 
@@ -435,15 +452,20 @@ while RodarJogo:
                 elif tipo == 3:
                     grupo.add(Ingredientes(tipo, vel_queijo))
                 IngredientesRec += 3
+                canal2.play(Start, loops=0)
+
 
         if pygame.sprite.spritecollide(TacoBalde, Sprites_Morte, True):
             Sprites_Morte.add(Ingredientes(4, vel_caveira))
             Vidas -= 1
+            canal3.play(Morte, loops=0)
+            canal3.set_volume(0.2)
+
         
         manager = pygame_gui.UIManager((largura, altura))
         input_nome = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((300, 300), (300, 50)), manager=manager)
         input_nome.hide()
-        enviar_nome = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((300, 360), (100, 40)), text='clique para escrever seu nome', manager=manager)
+        enviar_nome = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((300, 360), (100, 40)), text='confirmar', manager=manager)
         enviar_nome.hide()
         nome_inserido = False
         inserindo_nome = False
@@ -478,6 +500,7 @@ while RodarJogo:
 
                     if inserindo_nome:
                         manager.process_events(event)
+
                         if event.type == pygame_gui.UI_BUTTON_PRESSED:
                             if event.ui_element == enviar_nome:
                                 nome_jogador = input_nome.get_text()
@@ -495,10 +518,12 @@ while RodarJogo:
                                 perdeu = False
 
                 if inserindo_nome:
+                    janela.blit(esc_nome, (0, 0))
                     manager.update(tempo_tick_inputs)
                     manager.draw_ui(janela)
 
                 pygame.display.update()
+
 
         pygame.display.flip()
 
